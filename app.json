@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "Backdroply",
+    "slug": "backdroply",
+    "version": "1.0.0",
+    "scheme": "backdroply",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#030712"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.fatihozkurt.backdroply"
+    },
+    "android": {
+      "package": "com.fatihozkurt.backdroply"
+    },
+    "extra": {
+      "apiBaseUrl": "http://localhost:8080/api/v1",
+      "googleWebClientId": "",
+      "googleAndroidClientId": "",
+      "googleIosClientId": ""
+    }
+  }
+}
