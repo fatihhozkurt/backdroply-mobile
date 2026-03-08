@@ -1,8 +1,37 @@
-﻿# Backdroply Mobile
+# Backdroply Mobile
 
-Expo based iOS/Android app.
+Expo app for iOS/Android that connects to Backdroply backend APIs.
 
-## Run
+## Scope
+
+- Google sign-in via Expo Auth Session
+- Secure token storage via Expo Secure Store
+- Session restore on app start
+- User profile/token balance retrieval
+- Sign out and account deletion actions
+
+## Local Development
+
+Requirements:
+
+- Node.js 20+
+- Expo CLI (via `npx expo`)
+
+Run:
+
+```bash
 npm install
 npx expo start
+```
 
+## Runtime Config (app.json -> expo.extra)
+
+- `apiBaseUrl` (example: `http://localhost:8080/api/v1`)
+- `googleWebClientId`
+- `googleAndroidClientId`
+- `googleIosClientId`
+
+## Notes
+
+- Mobile login calls backend endpoint: `POST /api/v1/auth/google/mobile`
+- Access token is stored under secure key: `backdroply_access_token`
