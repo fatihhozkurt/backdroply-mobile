@@ -6,7 +6,9 @@
     "scheme": "backdroply",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
+    "icon": "./assets/icon.png",
     "splash": {
+      "image": "./assets/icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#030712"
     },
@@ -15,7 +17,11 @@
       "bundleIdentifier": "com.fatihozkurt.backdroply"
     },
     "android": {
-      "package": "com.fatihozkurt.backdroply"
+      "package": "com.fatihozkurt.backdroply",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#030712"
+      }
     },
     "extra": {
       "apiBaseUrl": "http://localhost:8080/api/v1",

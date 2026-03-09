@@ -24,6 +24,22 @@ npm install
 npx expo start
 ```
 
+Health check:
+
+```bash
+npm run doctor
+```
+
+Android release build:
+
+```bash
+npm run build:android:release
+```
+
+APK output:
+
+`android/app/build/outputs/apk/release/app-release.apk`
+
 ## Runtime Config (app.json -> expo.extra)
 
 - `apiBaseUrl` (example: `http://localhost:8080/api/v1`)
@@ -35,3 +51,4 @@ npx expo start
 
 - Mobile login calls backend endpoint: `POST /api/v1/auth/google/mobile`
 - Access token is stored under secure key: `backdroply_access_token`
+- Project uses Expo prebuild for native folders; run `npm run prebuild:android` before release build to sync `app.json` fields (app name, icon, package identifiers).
