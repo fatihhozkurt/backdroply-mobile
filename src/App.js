@@ -51,19 +51,46 @@ async function apiRequest(baseUrl, path, { method = "GET", token = "", body = nu
   return parsed;
 }
 
-export default function App() {
-  const config = useMemo(readRuntimeConfig, []);
-  const [accessToken, setAccessToken] = useState("");
-  const [user, setUser] = useState(null);
-  const [status, setStatus] = useState("Ready.");
-  const [booting, setBooting] = useState(true);
-  const [busy, setBusy] = useState(false);
-
+function GoogleLoginButton({ config, busy, onIdToken }) {
   const [googleRequest, googleResponse, promptGoogleLogin] = Google.useIdTokenAuthRequest({
     webClientId: config.googleWebClientId || undefined,
     androidClientId: config.googleAndroidClientId || undefined,
     iosClientId: config.googleIosClientId || undefined
   });
+
+  useEffect(() => {
+    if (!googleResponse || googleResponse.type !== "success") {
+      return;
+    }
+    const idToken = googleResponse.params?.id_token;
+    if (!idToken) {
+      return;
+    }
+    void onIdToken(idToken);
+  }, [googleResponse]);
+
+  return (
+    <Pressable
+      style={[styles.buttonPrimary, (!googleRequest || busy) && styles.buttonDisabled]}
+      disabled={!googleRequest || busy}
+      onPress={() => promptGoogleLogin()}
+    >
+      <Text style={styles.buttonPrimaryText}>Sign in with Google</Text>
+    </Pressable>
+  );
+}
+
+export default function App() {
+  const config = useMemo(readRuntimeConfig, []);
+  const oauthConfigured = useMemo(
+    () => Boolean(config.googleWebClientId || config.googleAndroidClientId || config.googleIosClientId),
+    [config.googleWebClientId, config.googleAndroidClientId, config.googleIosClientId]
+  );
+  const [accessToken, setAccessToken] = useState("");
+  const [user, setUser] = useState(null);
+  const [status, setStatus] = useState("Ready.");
+  const [booting, setBooting] = useState(true);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -83,18 +110,6 @@ export default function App() {
       alive = false;
     };
   }, []);
-
-  useEffect(() => {
-    if (!googleResponse || googleResponse.type !== "success") {
-      return;
-    }
-    const idToken = googleResponse.params?.id_token;
-    if (!idToken) {
-      setStatus("Google login failed: id_token is missing.");
-      return;
-    }
-    void loginWithGoogle(idToken);
-  }, [googleResponse]);
 
   useEffect(() => {
     if (!accessToken) {
@@ -207,13 +222,13 @@ export default function App() {
           <Text style={styles.status}>{status}</Text>
 
           {!user ? (
-            <Pressable
-              style={[styles.buttonPrimary, (!googleRequest || busy) && styles.buttonDisabled]}
-              disabled={!googleRequest || busy}
-              onPress={() => promptGoogleLogin()}
-            >
-              <Text style={styles.buttonPrimaryText}>Sign in with Google</Text>
-            </Pressable>
+            oauthConfigured ? (
+              <GoogleLoginButton config={config} busy={busy} onIdToken={loginWithGoogle} />
+            ) : (
+              <Text style={styles.warningText}>
+                Google sign-in is disabled in this build. Configure client IDs in app.json and rebuild.
+              </Text>
+            )
           ) : (
             <View style={styles.actions}>
               <Pressable style={[styles.buttonPrimary, busy && styles.buttonDisabled]} disabled={busy} onPress={signOut}>
@@ -274,6 +289,10 @@ const styles = StyleSheet.create({
   status: {
     marginTop: 16,
     color: "#cbd5e1"
+  },
+  warningText: {
+    marginTop: 16,
+    color: "#fcd34d"
   },
   actions: {
     marginTop: 12,
