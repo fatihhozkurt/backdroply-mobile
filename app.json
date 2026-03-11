@@ -3,6 +3,7 @@
     "name": "Backdroply",
     "slug": "backdroply",
     "version": "1.0.0",
+    "jsEngine": "hermes",
     "scheme": "backdroply",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
@@ -30,6 +31,10 @@
       "googleWebClientId": "380382170100-q2aesrdfvq6kuhfbbg9t19bmqj17dhqp.apps.googleusercontent.com",
       "googleAndroidClientId": "380382170100-psitd13p6d77p9rmre9iucq53ot7tfmo.apps.googleusercontent.com",
       "googleIosClientId": "380382170100-vcre9fei89v6qsaut5e5q2p21s2lllll.apps.googleusercontent.com"
-    }
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-web-browser"
+    ]
   }
 }
