@@ -7,7 +7,12 @@ Expo app for iOS/Android that connects to Backdroply backend APIs.
 - Google sign-in via Expo Auth Session
 - Secure token storage via Expo Secure Store
 - Session restore on app start
-- User profile/token balance retrieval
+- Studio flow: pick image/video, choose quality, process via backend
+- Token cost visibility on action button
+- Billing catalog + purchase intent start
+- Processing history + My Media listing
+- Legal page shortcuts with language preservation (`tr/en`)
+- Output download/share from mobile
 - Sign out and account deletion actions
 
 ## Local Development
@@ -43,12 +48,29 @@ APK output:
 ## Runtime Config (app.json -> expo.extra)
 
 - `apiBaseUrl` (example: `http://localhost:8080/api/v1`)
+- `webBaseUrl` (example: `http://localhost:5173`, used for legal links + checkout landing)
 - `googleWebClientId`
 - `googleAndroidClientId`
 - `googleIosClientId`
+- `supportEmail` (store support contact)
+- `kvkkEmail` (data subject request channel)
+- `supportPhone` (optional)
+- `supportKep` (optional)
+- `dataDeletionUrl` (public deletion/privacy endpoint)
 
 ## Notes
 
 - Mobile login calls backend endpoint: `POST /api/v1/auth/google/mobile`
 - Access token is stored under secure key: `backdroply_access_token`
+- For real device tests, do not use `localhost`. Use your LAN IP for `apiBaseUrl` and `webBaseUrl` (for example `http://192.168.1.10:8080/api/v1`).
 - Project uses Expo prebuild for native folders; run `npm run prebuild:android` before release build to sync `app.json` fields (app name, icon, package identifiers).
+- For Google Play / App Store listing compliance, keep `supportEmail` and `dataDeletionUrl` aligned with your published store metadata.
+
+## Store Compliance Checklist
+
+Before submitting to Google Play / App Store:
+
+1. Set support email in store listing exactly as `supportEmail`.
+2. Set data deletion URL in store listing exactly as `dataDeletionUrl`.
+3. Verify in-app legal/help screen shows support + KVKK emails and deletion link.
+4. Verify account deletion flow exists and is reachable from app UI.
