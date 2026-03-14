@@ -3,7 +3,6 @@
     "name": "Backdroply",
     "slug": "backdroply",
     "version": "1.0.0",
-    "jsEngine": "hermes",
     "scheme": "backdroply",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
@@ -27,8 +26,10 @@
       }
     },
     "extra": {
-      "apiBaseUrl": "http://localhost:8080/api/v1",
-      "webBaseUrl": "http://localhost:5173",
+      "apiBaseUrl": "https://api.backdroply.app/api/v1",
+      "webBaseUrl": "https://backdroply.app",
+      "apiBaseUrlDev": "http://localhost:8080/api/v1",
+      "webBaseUrlDev": "http://localhost:5173",
       "googleWebClientId": "380382170100-q2aesrdfvq6kuhfbbg9t19bmqj17dhqp.apps.googleusercontent.com",
       "googleAndroidClientId": "380382170100-psitd13p6d77p9rmre9iucq53ot7tfmo.apps.googleusercontent.com",
       "googleIosClientId": "380382170100-vcre9fei89v6qsaut5e5q2p21s2lllll.apps.googleusercontent.com",

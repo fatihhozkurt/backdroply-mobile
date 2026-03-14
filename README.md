@@ -47,8 +47,10 @@ APK output:
 
 ## Runtime Config (app.json -> expo.extra)
 
-- `apiBaseUrl` (example: `http://localhost:8080/api/v1`)
-- `webBaseUrl` (example: `http://localhost:5173`, used for legal links + checkout landing)
+- `apiBaseUrl` (production, HTTPS required in release builds)
+- `webBaseUrl` (production, HTTPS required in release builds)
+- `apiBaseUrlDev` (development fallback, e.g. `http://localhost:8080/api/v1`)
+- `webBaseUrlDev` (development fallback, e.g. `http://localhost:5173`)
 - `googleWebClientId`
 - `googleAndroidClientId`
 - `googleIosClientId`
@@ -57,6 +59,8 @@ APK output:
 - `supportPhone` (optional)
 - `supportKep` (optional)
 - `dataDeletionUrl` (public deletion/privacy endpoint)
+
+In release builds, app startup enforces HTTPS for `apiBaseUrl` and `webBaseUrl`. If HTTP is configured, sign-in/processing is blocked.
 
 ## Notes
 

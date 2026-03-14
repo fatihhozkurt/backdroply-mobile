@@ -8,6 +8,7 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
+    "test": "node --test src/**/*.test.js",
     "doctor": "npx expo-doctor",
     "prebuild:android": "expo prebuild --platform android",
     "build:android:release": "cross-env NODE_ENV=production expo prebuild --platform android && node scripts/ensureAndroidSdk.js && cd android && gradlew.bat --no-daemon assembleRelease"

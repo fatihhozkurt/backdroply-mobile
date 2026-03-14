@@ -16,6 +16,7 @@ import {
   Text,
   View
 } from "react-native";
+import { isHttpsUrl, normalizeBaseUrl, resolveRuntimeBaseUrl, toAbsoluteUrl } from "./runtimeUtils";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -145,33 +146,30 @@ const I18N = {
   }
 };
 
-function normalizeBaseUrl(input, fallback) {
-  const raw = (input || "").trim();
-  if (!raw) {
-    return fallback;
-  }
-  return raw.replace(/\/+$/, "");
-}
-
-function toAbsoluteUrl(base, path) {
-  if (!path) {
-    return base;
-  }
-  if (path.startsWith("http://") || path.startsWith("https://")) {
-    return path;
-  }
-  if (path.startsWith("/")) {
-    const root = base.replace(/\/api\/v1$/, "");
-    return `${root}${path}`;
-  }
-  return `${base}/${path.replace(/^\/+/, "")}`;
-}
-
 function readRuntimeConfig() {
   const extra = Constants.expoConfig?.extra || {};
+  const apiBaseUrl = resolveRuntimeBaseUrl(
+    extra,
+    "apiBaseUrl",
+    "apiBaseUrlDev",
+    "https://api.backdroply.app/api/v1",
+    "http://localhost:8080/api/v1"
+  );
+  const webBaseUrl = resolveRuntimeBaseUrl(
+    extra,
+    "webBaseUrl",
+    "webBaseUrlDev",
+    "https://backdroply.app",
+    "http://localhost:5173"
+  );
+  const transportError = !__DEV__ && (!isHttpsUrl(apiBaseUrl) || !isHttpsUrl(webBaseUrl))
+    ? "Release build requires HTTPS endpoints for apiBaseUrl and webBaseUrl."
+    : "";
+
   return {
-    apiBaseUrl: normalizeBaseUrl(extra.apiBaseUrl, "http://localhost:8080/api/v1"),
-    webBaseUrl: normalizeBaseUrl(extra.webBaseUrl, "http://localhost:5173"),
+    apiBaseUrl,
+    webBaseUrl,
+    transportError,
     googleWebClientId: extra.googleWebClientId || "",
     googleAndroidClientId: extra.googleAndroidClientId || "",
     googleIosClientId: extra.googleIosClientId || "",
@@ -286,9 +284,10 @@ export default function App() {
   const config = useMemo(readRuntimeConfig, []);
   const [lang, setLang] = useState("tr");
   const t = useMemo(() => I18N[lang] || I18N.tr, [lang]);
+  const runtimeSecure = !config.transportError;
   const oauthConfigured = useMemo(
-    () => Boolean(config.googleWebClientId || config.googleAndroidClientId || config.googleIosClientId),
-    [config.googleWebClientId, config.googleAndroidClientId, config.googleIosClientId]
+    () => runtimeSecure && Boolean(config.googleWebClientId || config.googleAndroidClientId || config.googleIosClientId),
+    [runtimeSecure, config.googleWebClientId, config.googleAndroidClientId, config.googleIosClientId]
   );
 
   const [booting, setBooting] = useState(true);
@@ -355,7 +354,21 @@ export default function App() {
   }, [lang]);
 
   useEffect(() => {
+    if (!config.transportError) {
+      return undefined;
+    }
+    setStatus(config.transportError);
+    return undefined;
+  }, [config.transportError]);
+
+  useEffect(() => {
     let alive = true;
+    if (config.transportError) {
+      setStatus(config.transportError);
+      return () => {
+        alive = false;
+      };
+    }
     apiRequest(config.apiBaseUrl, "/billing/catalog")
       .then((payload) => {
         if (!alive || !payload) {
@@ -372,7 +385,7 @@ export default function App() {
     return () => {
       alive = false;
     };
-  }, [config.apiBaseUrl, t.catalogMissing]);
+  }, [config.apiBaseUrl, config.transportError, t.catalogMissing]);
 
   useEffect(() => {
     if (!accessToken) {
@@ -385,6 +398,10 @@ export default function App() {
   }, [accessToken]);
 
   async function refreshSession(token, showStatus = true) {
+    if (config.transportError) {
+      setStatus(config.transportError);
+      return;
+    }
     setBusy(true);
     try {
       const [me, hist, media] = await Promise.all([
@@ -411,6 +428,10 @@ export default function App() {
   }
 
   async function loginWithGoogle(idToken) {
+    if (config.transportError) {
+      setStatus(config.transportError);
+      return;
+    }
     setBusy(true);
     try {
       const payload = await apiRequest(config.apiBaseUrl, "/auth/google/mobile", {
@@ -433,10 +454,21 @@ export default function App() {
   }
 
   async function signOut() {
-    await SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY);
-    setAccessToken("");
-    setUser(null);
-    setStatus(t.logoutDone);
+    try {
+      if (accessToken) {
+        await apiRequest(config.apiBaseUrl, "/auth/logout", {
+          method: "POST",
+          token: accessToken
+        });
+      }
+    } catch {
+      // Local secure-store cleanup still proceeds even if network is unavailable.
+    } finally {
+      await SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY);
+      setAccessToken("");
+      setUser(null);
+      setStatus(t.logoutDone);
+    }
   }
 
   async function deleteAccount() {
@@ -485,6 +517,10 @@ export default function App() {
   }
 
   async function runProcess() {
+    if (config.transportError) {
+      setStatus(config.transportError);
+      return;
+    }
     if (!accessToken) {
       setStatus(t.authRequired);
       return;
@@ -571,7 +607,7 @@ export default function App() {
         const queuePos = Number(payload?.queuePosition || 0);
         if (state === "processing") {
           const etaText = eta > 0 ? (lang === "tr" ? `Tahmini ~${eta} sn` : `Estimated ~${eta}s`) : "";
-          setStatus(`${lang === "tr" ? "Ä°ÅŸleniyor" : "Processing"}${etaText ? ` | ${etaText}` : ""}`);
+          setStatus(`${lang === "tr" ? "İşleniyor" : "Processing"}${etaText ? ` | ${etaText}` : ""}`);
           return;
         }
         const etaText = eta > 0 ? (lang === "tr" ? `Tahmini ~${eta} sn` : `Estimated ~${eta}s`) : "";
@@ -630,6 +666,10 @@ export default function App() {
   }
 
   async function buyPlan(planCode) {
+    if (config.transportError) {
+      setStatus(config.transportError);
+      return;
+    }
     if (!accessToken) {
       setStatus(t.authRequired);
       return;
